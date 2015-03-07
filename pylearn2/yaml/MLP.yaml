@@ -1,0 +1,295 @@
+#Created on Thu Oct 30 17:35:20 2014
+
+#@author: whale
+
+#MLP
+
+#['hour', 'C1', 'C2',  'banner_pos', 'site_domain',
+# 'site_category', 'app_category', 'device_id',
+# 'device_os', 'device_make', 'device_model', 
+#'device_conn_type', 'device_geo_country', 
+#'C20', 'C21', 'C22', 'C23', 'C24']
+
+#['hour', 'C1', 'C2', 'C3', 'C4', 'banner_pos', 'site_id', 'site_domain',
+# 'site_category', 'app_id', 'app_domain', 'app_category', 'device_id',
+# 'device_ip', 'device_os', 'device_make', 'device_model', 'device_type', 
+#'device_conn_type', 'device_geo_country', 'C20', 'C21', 'C22', 'C23', 'C24']
+
+
+!obj:pylearn2.train.Train {
+    dataset: !obj:pylearn2.datasets.dataclasstransform.CLICKTransformerDataset {
+                 raw: !obj:pylearn2.datasets.dataclassraw.CLICK {
+                          which_set: 'train',
+                          which_day: 1,
+                      },
+                 transformer: !obj:pylearn2.datasets.transformer.Transformer {
+                     featurelist: ['hour', 'C1', 'C2',  'banner_pos', 'site_domain',
+                                   'site_category', 'app_category', 'device_id',
+                                   'device_os', 'device_make', 'device_model', 
+                                   'device_conn_type', 'device_geo_country', 
+                                   'C20', 'C21', 'C22', 'C23', 'C24'],
+                     raw: !obj:pylearn2.datasets.dataclassraw.CLICK {
+                          which_set: 'train',
+                          which_day: 1,
+                      },
+                     mdim: 1836,
+                              }
+              },
+
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: 32,
+        #input_space: ,
+        #input_source: 'features', 
+        nvis: 1836, 
+        #seed: None,                
+        #layer_name: None,
+        #extensions: None,
+        #monitor_targets: True,
+        layers: [ #!obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                  #   layer_name: 'h1',
+                  #   output_channels: 32,
+                  #   irange: .1,
+                  #   #sparse_init: None,
+                  #   #include_prob: 1.0,
+                  #   kernel_shape: [3, 3],
+                  #   #kernel_stride: [1, 1],
+                  #   pool_type: 'max',
+                  #   pool_shape: [1, 1],
+                  #   pool_stride: [1, 1],
+                  #   border_mode: 'valid',
+                  #   #W_lr_scale: 0.01,
+                  #   #b_lr_scale: 0.01,
+                  #   init_bias: 0.,
+                  #   tied_b: False,
+                  #   #left_slope: 0.0,
+                  #   #max_kernel_norm: 1.9365,  # what is this
+                  #   #detector_normalization: 
+                  #   # !obj:pylearn2.expr.normalize.CrossChannelNormalization {
+                  #       #alpha: 1e-4, 
+                  #       #k: 2,
+                  #       #beta: 0.75, 
+                  #       #n: 5
+                  #   # },
+                  #   #output_normalization:
+                  #   # !obj:pylearn2.expr.normalize.CrossChannelNormalization {
+                  #       #alpha: 1e-4, 
+                  #       #k: 2,
+                  #       #beta: 0.75, 
+                  #       #n: 5
+                  #   # },
+                  #   #monitor_style: 'classification'
+                 #}, !obj:pylearn2.models.maxout.Maxout {
+                  #   layer_name: 'h3',
+                  #   num_units: 512,
+                  #   num_pieces: 2,
+                  #   #pool_stride: None,
+                  #   randomize_pools: False,
+                  #   irange: .01,
+                  #   #sparse_init: None,
+                  #   #sparse_stdev: 1.,
+                  #   #include_prob: 1.0,
+                  #   init_bias: 0.,
+                  #   #W_lr_scale: 0.01,
+                  #   #b_lr_scale: 0.01,
+                  #   #max_col_norm: None,
+                  #   #max_row_norm: None,
+                  #   #mask_weights: None,
+                  #   min_zero: False
+                 #}, 
+                   !obj:pylearn2.models.mlp.Softmax {
+                     n_classes: 2, 
+                     layer_name: 'y', 
+                     irange: .05,
+                     #istdev: None,
+                     #sparse_init: None, 
+                     #W_lr_scale: 0.01,
+                     #b_lr_scale: 0.01, 
+                     #max_row_norm: None,
+                     no_affine: False,
+                     #max_col_norm: None, 
+                     #init_bias_target_marginals: None,
+                     #binary_target_dim: None
+                 },
+                    #!obj:pylearn2.models.mlp.Sigmoid {
+                    # dim: 387,
+                    # layer_name: 'y',
+                    # irange: 0.05,
+                    # #istdev: None,
+                    # #sparse_init: None,
+                    # #sparse_stdev: 1.,
+                    # #include_prob: 1.0,
+                    # init_bias: 0.,
+                    # #W_lr_scale: 0.01,
+                    # #b_lr_scale: 0.01,
+                    # #mask_weights: None,
+                    # #max_row_norm: None,
+                    # #max_col_norm: None,
+                    # #min_col_norm: None,
+                    # #softmax_columns: None,
+                    # #copy_input: None,
+                    # #use_abs_loss: False,
+                    # #use_bias: True
+                    # monitor_style: 'detection'
+                 #},
+                    #!obj:pylearn2.models.mlp.Linear {
+                    # dim: 2,
+                    # layer_name: 'y',
+                    # irange: 0.05,
+                    # #istdev: None,
+                    # #sparse_init: None,
+                    # #sparse_stdev: 1.,
+                    # #include_prob: 1.0,
+                    # init_bias: 0.,
+                    # #W_lr_scale: 0.01,
+                    # #b_lr_scale: 0.01,
+                    # #mask_weights: None,
+                    # #max_row_norm: None,
+                    # #max_col_norm: None,
+                    # #min_col_norm: None,
+                    # #softmax_columns: None,
+                    # #copy_input: None,
+                    # #use_abs_loss: False,
+                    # #use_bias: True
+                 #}
+            ]
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        batch_size: 32,
+        learning_rate: .04,
+        #monitoring_batch_size: None,
+        #monitoring_batches: None,
+        monitoring_dataset:
+            {
+                'train': !obj:pylearn2.datasets.dataclasstransform.CLICKTransformerDataset {
+                  raw: !obj:pylearn2.datasets.dataclassraw.CLICK {
+                          which_set: 'train',
+                          which_day: 1,
+                      },
+                  transformer: !obj:pylearn2.datasets.transformer.Transformer {
+                     featurelist: ['hour', 'C1', 'C2',  'banner_pos', 'site_domain',
+                                   'site_category', 'app_category', 'device_id',
+                                   'device_os', 'device_make', 'device_model', 
+                                   'device_conn_type', 'device_geo_country', 
+                                   'C20', 'C21', 'C22', 'C23', 'C24'],
+                     raw: !obj:pylearn2.datasets.dataclassraw.CLICK {
+                          which_set: 'train',
+                          which_day: 1,
+                      },
+                     mdim: 1836,
+                              }
+              },
+                'valid': !obj:pylearn2.datasets.dataclasstransform.CLICKTransformerDataset {
+                  raw: !obj:pylearn2.datasets.dataclassraw.CLICK {
+                          which_set: 'train',
+                          which_day: 2,
+                      },
+                  transformer: !obj:pylearn2.datasets.transformer.Transformer {
+                     featurelist: ['hour', 'C1', 'C2',  'banner_pos', 'site_domain',
+                                   'site_category', 'app_category', 'device_id',
+                                   'device_os', 'device_make', 'device_model', 
+                                   'device_conn_type', 'device_geo_country', 
+                                   'C20', 'C21', 'C22', 'C23', 'C24'],
+                     raw: !obj:pylearn2.datasets.dataclassraw.CLICK {
+                          which_set: 'train',
+                          which_day: 1,
+                      },
+                     mdim: 1836,
+                              }
+              },   
+            },
+        monitor_iteration_mode: 'even_sequential',
+        cost: !obj:pylearn2.costs.cost.SumOfCosts { 
+            costs: [
+                !obj:pylearn2.costs.cost.MethodCost {
+                    method: 'cost_from_X',
+                    #data_specs: None,
+                }, 
+                   #!obj:pylearn2.costs.mlp.WeightDecay {
+                   # coeffs: [ .00005, .00005, .0005, .0005]
+                #}, 
+                   #!obj:pylearn2.costs.mlp.dropout.Dropout {
+                   # default_input_include_prob: 1.,
+                   # input_include_probs: 
+                   #     {
+                   # #        'h2' : .5,
+                   #         'h3' : .5,
+                   #         'y' : .5                   
+                   #     },        
+                   # default_input_scale: 1., 
+                   # input_scales: 
+                   #     {
+                   # #        'h2' : 2.,
+                   #         'h3' : 2.,
+                   #         'y' : 2.   
+                   #     },
+                   # per_example: True,
+                #}
+            ]
+        },
+        #update_callbacks: [
+        #    !obj:pylearn2.training_algorithms.sgd.ExponentialDecay {
+        #    decay_factor: 1.00004,
+        #    min_lr: .000001
+        #    }
+        #]
+        learning_rule : 
+               !obj:pylearn2.training_algorithms.learning_rule.Momentum {
+                  init_momentum: .5,
+                  #nesterov_momentum: False
+            }, 
+               #!obj:pylearn2.training_algorithms.learning_rule.AdaDelta {
+               #   decay: 0.95
+            #}, 
+               #!obj:pylearn2.training_algorithms.learning_rule.RMSProp {
+               #   decay: 0.9, 
+               #   max_scaling: 100000
+            #},
+        
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                #!obj:pylearn2.termination_criteria.MonitorBased {
+                #    channel_name: "valid_y_misclass",
+                #    prop_decrease: 0.5,
+                #    N: 10
+                #},
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 10000,
+                    #new_epochs=True
+                }
+            ]
+        },
+        #update_callbacks: None,
+        #set_batch_size: False,
+        train_iteration_mode: 'even_sequential',
+        #batches_per_iter: None,
+        #theano_function_mode: None, 
+        #monitoring_costs: None,
+        #seed: [2012, 10, 5],
+    },
+    extensions:
+        [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_nll',
+             save_path: "LR1_best.pkl",
+             #store_best_model: False,
+             #higher_is_better: True, 
+             #tag_key: None
+        }, !obj:pylearn2.training_algorithms.sgd.MonitorBasedLRAdjuster {
+             channel_name: 'valid_nll',
+             #high_trigger: 1., 
+             #shrink_amt: .99,
+             #low_trigger: .99, 
+             #grow_amt: 1.01,
+             #min_lr: 1e-7, 
+             #max_lr: 1.,
+             #dataset_name: None,
+        }, 
+          # !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
+          #  start: 1,
+          #  saturate: 10,
+          #  final_momentum: .9
+        #},
+    ],
+    save_path: "LR1.pkl",
+    save_freq : 1,
+    #allow_overwrite=True
+}

@@ -1,0 +1,28 @@
+Training results:
+
+FM onehot+hashing 107: 0.3920
+FM 4: 0.3905
+FM 8: 0.3904
+FM 12: 0.3905
+
+vw origin: 0.3945
+vw quadratic+cubic 24: 0.3900
+vw quadratic+cubic 25: 0.3901
+vw quadratic 25: 0.3929
+vw quadratic+cubic more 25: 
+vw quadratic+cubic feature mask: 0.3906
+
+FTRL-proximal onehot3: 0.3978
+FTRL-proximal onehot+trimmed: 0.4014
+FTRL-proximal onehot: 0.3957
+
+xgboost: 0.4000~
+
+Commands used:
+
+fm -k 4 -l 0.00002 -r 0.08 -t 2 -s 8 test.fm train.fm
+fm -k 8 -l 0.00002 -r 0.02 -t 6 -s 8 test.fm train.fm
+
+vw -d train.vw --passes 5 -c -f vwpoly24.model --loss_function logistic  -q tb -q ts -q ta -q td -q tc -q bs -q ba -q bd -q bc -q sa -q sd -q sc -q ad -q ac -q dc -q cc --cubic bsa --cubic bsd --cubic bsc --cubic bad --cubic bac --cubic bdc --cubic sad --cubic sac --cubic sdc --cubic adc --holdout_off -P 40428967 -C -1.58 -l 0.03 -b 24 --l2 1e-7 --l1 1e-12 
+vw -d train.vw --passes 6 -c -f vwpoly25.model --loss_function logistic  -q tb -q ts -q ta -q td -q tc -q bs -q ba -q bd -q bc -q sa -q sd -q sc -q ad -q ac -q dc -q cc --cubic bsa --cubic bsd --cubic bsc --cubic bad --cubic bac --cubic bdc --cubic sad --cubic sac --cubic sdc --cubic adc --holdout_off -P 40428967 -C -1.58 -l 0.03 -b 25 --l2 1e-7 --l1 1e-12 
+vw -d train.vw --passes 26 -c -f vworigin.model --loss_function logistic  --holdout_off -P 2.0 -C -1.58 -l 0.09 -b 25 --l1 1e-10

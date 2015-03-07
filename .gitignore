@@ -1,0 +1,18 @@
+# ignore files
+
+# zip file downloaded from kaggle
+*.zip
+# figure files
+*.svg
+*.png
+# huge csv files
+*.csv
+# huge hdf5 files
+#.h5
+# python source files
+*.pyc
+# temporary files
+*~
+# joblib npy files
+*.npy
+*.npz

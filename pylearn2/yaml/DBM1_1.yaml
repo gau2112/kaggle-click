@@ -1,0 +1,233 @@
+# -*- coding: utf-8 -*-
+
+#Created on Sun Nov 2 19:58:44 2014
+
+#@author: whale
+
+#DBM
+
+!obj:pylearn2.train.Train {
+    dataset: &data !obj:pylearn2.datasets.clickdata.CLICKSparseDataset {
+                 X_load_path: 'day1.npz',
+                 X_from_scipy_sparse_dataset: None, 
+                 X_zipped_npy: False,
+                 y_path: 'click_data.h5', 
+                 y_labels: 2,
+                 y_part: 1
+              },
+    model: !obj:pylearn2.models.dbm.DBM {
+              #inference_procedure: !obj:pylearn2.models.dbm.inference_procedure.SuperWeightDoubling {},
+              #sampling_procedure: !obj:pylearn2.models.dbm.sampling_procedure.GibbsEvenOdd {},
+              batch_size: 4096,
+              niter: 2,
+              visible_layer: !obj:pylearn2.models.dbm.BinaryVector {
+                nvis: 1836,
+                bias_from_marginals: *data,
+                #center: False,
+                #copies: 1,
+                #learn_init_inpainting_state: False
+              },
+              hidden_layers: [
+                !obj:pylearn2.models.dbm.BinaryVectorMaxPool {
+                    #center: False,
+                    #max_col_norm: 1.809978,
+                    detector_layer_dim: 1024,
+                    pool_size: 1,
+                    irange: 0.005,
+                    sparse_init: 15,
+                    #sparse_stdev: 1.,
+                    #include_prob: 1.0,
+                    layer_name: 'h1',
+                    init_bias: -0.710467, #-2.
+                    #W_lr_scale: None,
+                    #b_lr_scale: None,
+                    #mask_weights: None,
+                    #copies: 1
+               },
+                !obj:pylearn2.models.dbm.BinaryVectorMaxPool {
+                    #center: False,
+                    max_col_norm: 2.666304,
+                    detector_layer_dim: 512,
+                    pool_size: 1,
+                    irange: 0.00638830865761,
+                    #sparse_init: 15,
+                    #sparse_stdev: 1.,
+                    #include_prob: 1.0,
+                    layer_name: 'h2',
+                    init_bias: -0.393587,
+                    #W_lr_scale: None,
+                    #b_lr_scale: None,
+                    #mask_weights: None,
+                    #copies: 1
+               },
+                !obj:pylearn2.models.dbm.BinaryVectorMaxPool {
+                    #center: False,
+                    max_col_norm: 2.666304,
+                    detector_layer_dim: 256,
+                    pool_size: 1,
+                    irange: 0.00638830865761,
+                    #sparse_init: 15,
+                    #sparse_stdev: 1.,
+                    #include_prob: 1.0,
+                    layer_name: 'h3',
+                    init_bias: -0.393587,
+                    #W_lr_scale: None,
+                    #b_lr_scale: None,
+                    #mask_weights: None,
+                    #copies: 1
+               },
+               #!obj:pylearn2.models.dbm.Softmax {
+               #     #center: False,
+               #     #max_col_norm: 5.175683,
+               #     irange: 0.05,
+               #     #sparse_init: 23,
+               #     #sparse_istdev = 1., 
+               #     layer_name: 'y',
+               #     n_classes: 387,
+               #     #W_lr_scale: None,
+               #     #b_lr_scale: None,
+               #     #copies = 1,
+               #     #learn_init_inpainting_state = True
+               #}
+              ]
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        batch_size: 4096,
+        learning_rate: 15,
+        #monitoring_batch_size: None,
+        #monitoring_batches: None,
+        monitoring_dataset:
+            {
+                'train': !obj:pylearn2.datasets.clickdata.CLICKSparseDataset {
+                             X_load_path: 'day1.npz',
+                             X_from_scipy_sparse_dataset: None, 
+                             X_zipped_npy: False,
+                             y_path: 'click_data.h5', 
+                             y_labels: 2,
+                             y_part: 1
+                         },
+                'valid': !obj:pylearn2.datasets.clickdata.CLICKSparseDataset {
+                             X_load_path: 'day2.npz',
+                             X_from_scipy_sparse_dataset: None, 
+                             X_zipped_npy: False,
+                             y_path: 'click_data.h5', 
+                             y_labels: 2,
+                             y_part: 2
+                         },
+            },
+        monitor_iteration_mode: 'even_sequential',
+        cost: !obj:pylearn2.costs.cost.SumOfCosts { 
+            costs: [
+                #!obj:pylearn2.costs.dbm.MultiPrediction {
+                #    both_directions: False,
+                #    noise: False,
+                #    #l1_act_coeffs: None,
+                #    #l1_act_targets: None,
+                #    #l1_act_eps: None,
+                #    #range_rewards: None,
+                #    #stdev_rewards: None,
+                #    #robustness: None,
+                #    supervised: 1,
+                #    mask_gen: !obj:pylearn2.costs.dbm.MaskGen {
+                #                  drop_prob: 0.5,
+                #                  balance: False,
+                #                  sync_channels: False,
+                #                  #drop_prob_y: None, 
+                #              },
+                #    #monitor_multi_inference: False,
+                #    #niter: None,
+                #    #block_grad: None,
+                #    #vis_presynaptic_cost: None,
+                #    #hid_presynaptic_cost: None,
+                #    #reweighted_act_coeffs: None,
+                #    #reweighted_act_targets: None,
+                #    #toronto_act_targets: None,
+                #    #toronto_act_coeffs: None,
+                #    #monitor_each_step: False,
+                #    #use_sum: False,
+                #},
+                !obj:pylearn2.costs.dbm.VariationalPCD {
+                    num_chains: 125,
+                    num_gibbs_steps: 5,
+                    #supervised: False,
+                    #toronto_neg: False, 
+                    #theano_rng: None
+                },
+                !obj:pylearn2.costs.dbm.WeightDecay {
+                    coeffs: [ .0001, .0001, .0001  ]
+                },
+                !obj:pylearn2.costs.dbm.TorontoSparsity {
+                    targets: [ .2, .2, .2 ],
+                    coeffs: [ .001, .001, .001 ],
+                    #supervised: False
+                }
+            ]
+        },
+        #update_callbacks: [
+        #    !obj:pylearn2.training_algorithms.sgd.ExponentialDecay {
+        #    decay_factor: 1.00004,
+        #    min_lr: .000001
+        #    }
+        #]
+        learning_rule : 
+               !obj:pylearn2.training_algorithms.learning_rule.Momentum {
+                  init_momentum: .9,
+                  #nesterov_momentum: False
+            }, 
+               #!obj:pylearn2.training_algorithms.learning_rule.AdaDelta {
+               #   decay: 0.95
+            #}, 
+               #!obj:pylearn2.training_algorithms.learning_rule.RMSProp {
+               #   decay: 0.9, 
+               #   max_scaling: 100000
+            #},
+        
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                #!obj:pylearn2.termination_criteria.MonitorBased {
+                #    channel_name: "valid_err",
+                #    prop_decrease: 0.5,
+                #    N: 10
+                #},
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 10000,
+                    #new_epochs=True
+                }
+            ]
+        },
+        #update_callbacks: None,
+        #set_batch_size: False,
+        train_iteration_mode: 'even_sequential',
+        #batches_per_iter: None,
+        #theano_function_mode: None, 
+        #monitoring_costs: None,
+        #seed: [2012, 10, 5],
+    },
+    extensions:
+        [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_err',
+             save_path: "dbm1_1_best.pkl",
+             #store_best_model: False,
+             #higher_is_better: True, 
+             #tag_key: None
+        }, !obj:pylearn2.training_algorithms.sgd.MonitorBasedLRAdjuster {
+             channel_name: 'train_err',
+             #high_trigger: 1., 
+             #shrink_amt: .99,
+             #low_trigger: .99, 
+             #grow_amt: 1.01,
+             #min_lr: 1e-7, 
+             #max_lr: 1.,
+             #dataset_name: None,
+        }, 
+          # !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
+          #  start: 1,
+          #  saturate: 10,
+          #  final_momentum: .9
+        #},
+    ],
+    save_path: "dbm1_1.pkl",
+    save_freq : 1,
+    #allow_overwrite=True       
+}
+    

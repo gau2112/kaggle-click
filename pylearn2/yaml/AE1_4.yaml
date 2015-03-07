@@ -1,0 +1,155 @@
+# -*- coding: utf-8 -*-
+
+#Created on Sun Nov 2 16:06:09 2014
+
+#@author: whale
+
+#AE Denoising
+
+!obj:pylearn2.train.Train {
+    dataset: !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                 raw: !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                     raw: !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                              raw: !obj:pylearn2.datasets.clickdata.CLICKSparseDataset {
+                                     X_load_path: 'day1.npz',
+                                     X_from_scipy_sparse_dataset: None, 
+                                     X_zipped_npy: False,
+                                     y_path: 'click_data.h5', 
+                                     y_labels: 2,
+                                     y_part: 1
+                                  },
+                            transformer: !pkl: "ae1_1_best.pkl",
+                            #cpu_only: False,
+                            #space_preserving: False
+                     },
+                     transformer: !pkl: "ae1_2_best.pkl",
+                     #cpu_only: False,
+                     #space_preserving: False
+                 },
+                 transformer: !pkl: "ae1_3_best.pkl",
+                 #cpu_only: False,
+                 #space_preserving: False
+             },
+    model: !obj:pylearn2.models.autoencoder.DenoisingAutoencoder {
+               nvis : 256,
+               nhid : 128,
+               irange : 0.05,
+               corruptor: !obj:pylearn2.corruption.BinomialCorruptor {
+                              corruption_level: .3,
+                              #rng: 2001
+                          },
+               act_enc: "sigmoid",
+               act_dec: null,    # Linear activation on the decoder side.
+               #tied_weights: False,
+               #rng: 1988
+           },
+
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        learning_rate : .01,
+        batch_size : 4096,
+        train_iteration_mode: 'even_sequential',
+        #monitoring_batch_size: None,
+        #monitoring_batches: 30,
+        monitoring_dataset: {
+            'train' : !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                          raw: !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                               raw: !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                                    raw: !obj:pylearn2.datasets.clickdata.CLICKSparseDataset {
+                                             X_load_path: 'day1.npz',
+                                             X_from_scipy_sparse_dataset: None, 
+                                             X_zipped_npy: False,
+                                             y_path: 'click_data.h5', 
+                                             y_labels: 2,
+                                             y_part: 1
+                                          },
+                                    transformer: !pkl: "ae1_1_best.pkl",
+                                    #cpu_only: False,
+                                    #space_preserving: False
+                               },
+                               transformer: !pkl: "ae1_2_best.pkl",
+                               #cpu_only: False,
+                               #space_preserving: False
+                          },
+                          transformer: !pkl: "ae1_3_best.pkl",
+                          #cpu_only: False,
+                          #space_preserving: False
+                       },
+            'valid' : !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                          raw: !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                               raw: !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+                                    raw: !obj:pylearn2.datasets.clickdata.CLICKSparseDataset {
+                                             X_load_path: 'day2.npz',
+                                             X_from_scipy_sparse_dataset: None, 
+                                             X_zipped_npy: False,
+                                             y_path: 'click_data.h5', 
+                                             y_labels: 2,
+                                             y_part: 2
+                                          },
+                                    transformer: !pkl: "ae1_1_best.pkl",
+                                    #cpu_only: False,
+                                    #space_preserving: False
+                               },
+                               transformer: !pkl: "ae1_2_best.pkl",
+                               #cpu_only: False,
+                               #space_preserving: False
+                          },
+                          transformer: !pkl: "ae1_3_best.pkl",
+                          #cpu_only: False,
+                          #space_preserving: False
+                       }
+        },
+        monitor_iteration_mode: 'even_sequential',
+        cost : !obj:pylearn2.costs.autoencoder.MeanSquaredReconstructionError {},
+        learning_rule: 
+               !obj:pylearn2.training_algorithms.learning_rule.Momentum {
+                  init_momentum: .7,
+                  #nesterov_momentum: False
+            }, 
+               #!obj:pylearn2.training_algorithms.learning_rule.AdaDelta {
+               #   decay: 0.95
+            #}, 
+               #!obj:pylearn2.training_algorithms.learning_rule.RMSProp {
+               #   decay: 0.9, 
+               #   max_scaling: 100000
+            #},
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                #!obj:pylearn2.termination_criteria.MonitorBased {
+                #    channel_name: "valid_objective",
+                #    prop_decrease: 0.02,
+                #    N: 50
+                #},
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 10000,
+                    #new_epochs=True
+                }
+            ]
+        },
+    },
+    extensions: 
+       [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_objective',
+             save_path: "ae1_4_best.pkl",
+             #store_best_model: False,
+             #higher_is_better: True, 
+             #tag_key: None
+         }, 
+         !obj:pylearn2.training_algorithms.sgd.MonitorBasedLRAdjuster {
+            channel_name: 'train_objective',
+            #high_trigger: 1., 
+            #shrink_amt: .99,
+            #low_trigger: .99, 
+            #grow_amt: 1.01,
+            #min_lr: 1e-7, 
+            #max_lr: 1.,
+            #dataset_name: None,
+         },
+         !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
+            start: 10,
+            saturate: 20,
+            final_momentum: .9
+         },
+    ],
+    save_path: "ae1_4.pkl",
+    save_freq: 1
+}
